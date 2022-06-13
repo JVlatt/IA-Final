@@ -497,7 +497,7 @@ void Raven_Bot::Render()
   gdi->ClosedShape(m_vecBotVBTrans);
   
   //draw the head
-  if (m_pTeam != nullptr)
+  if (m_pWorld->IsTeamMatch() && m_pTeam != nullptr)
   {
       switch (m_pTeam->m_teamColor)
       {
