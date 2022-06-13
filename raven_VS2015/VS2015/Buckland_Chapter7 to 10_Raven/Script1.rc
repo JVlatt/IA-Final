@@ -59,6 +59,11 @@ BEGIN
         MENUITEM "Show Goal Queue",             IDM_BOTS_SHOW_GOAL_Q
         MENUITEM "Show Path",                   IDM_NAVIGATION_SHOW_PATH
     END
+    POPUP "Game Mode"
+    BEGIN
+        MENUITEM "FFA",                         IDM_FFA
+        MENUITEM "TDM",                         IDM_TDM
+    END
 END
 
 

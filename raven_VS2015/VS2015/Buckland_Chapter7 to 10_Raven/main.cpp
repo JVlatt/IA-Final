@@ -110,6 +110,8 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
         CheckMenuItemAppropriately(hwnd, IDM_BOTS_SHOW_GOAL_Q, UserOptions->m_bShowGoalsOfSelectedBot);
         CheckMenuItemAppropriately(hwnd, IDM_NAVIGATION_SHOW_INDICES, UserOptions->m_bShowNodeIndices);
         CheckMenuItemAppropriately(hwnd, IDM_BOTS_SHOW_SENSED, UserOptions->m_bShowOpponentsSensedBySelectedBot);
+        CheckMenuItemAppropriately(hwnd, IDM_FFA, !g_pRaven->IsTeamMatch());
+        CheckMenuItemAppropriately(hwnd, IDM_TDM, g_pRaven->IsTeamMatch());
 
       }
 
@@ -330,7 +332,24 @@ LRESULT CALLBACK WindowProc (HWND   hwnd,
         CheckMenuItemAppropriately(hwnd, IDM_BOTS_SHOW_GOAL_Q, UserOptions->m_bShowGoalsOfSelectedBot);
 
         break;
+        
+      case IDM_FFA:
+          if (g_pRaven->IsTeamMatch())
+          {
+              g_pRaven->SetTeamMatch(false);
+              CheckMenuItemAppropriately(hwnd, IDM_FFA, true);
+              CheckMenuItemAppropriately(hwnd, IDM_TDM, false);
+          }
+          break;
 
+      case IDM_TDM:
+          if (!g_pRaven->IsTeamMatch())
+          {
+              g_pRaven->SetTeamMatch(true);
+              CheckMenuItemAppropriately(hwnd, IDM_FFA, false);
+              CheckMenuItemAppropriately(hwnd, IDM_TDM, true);
+          }
+          break;
       }//end switch
     }
 

@@ -44,6 +44,10 @@ private:
   //a list of all the bots that are inhabiting the map
   std::list<Raven_Bot*>            m_Bots;
 
+  //teams of Raven Bots
+  Raven_Team*            m_pTeamA;
+  Raven_Team*            m_pTeamB;
+
   //the user may select a bot to control manually. This is a pointer to that
   //bot
   Raven_Bot*                       m_pSelectedBot;
@@ -55,7 +59,9 @@ private:
   //this class manages all the path planning requests
   PathManager<Raven_PathPlanner>*  m_pPathManager;
 
-
+  //if true the game mode will be deathmatch otherwise it will be FFA
+  bool                             m_bTeamMatch;
+  
   //if true the game will be paused
   bool                             m_bPaused;
 
@@ -153,7 +159,9 @@ public:
   Raven_Bot*  PossessedBot()const{return m_pSelectedBot;}
   void        ChangeWeaponOfPossessedBot(unsigned int weapon)const;
 
-  
+  bool        IsTeamMatch() { return m_bTeamMatch; }
+  void        SetTeamMatch(bool isTeamMatch);
+
   const Raven_Map* const                   GetMap()const{return m_pMap;}
   Raven_Map* const                         GetMap(){return m_pMap;}
   const std::list<Raven_Bot*>&             GetAllBots()const{return m_Bots;}

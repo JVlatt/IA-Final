@@ -39,7 +39,8 @@ Raven_Game::Raven_Game():m_pSelectedBot(NULL),
                          m_bRemoveABot(false),
                          m_pMap(NULL),
                          m_pPathManager(NULL),
-                         m_pGraveMarkers(NULL)
+                         m_pGraveMarkers(NULL),
+                         m_bTeamMatch(false)
 {
   //load in the default map
   LoadMap(script->GetString("StartMap"));
@@ -388,6 +389,8 @@ bool Raven_Game::LoadMap(const std::string& filename)
   m_pGraveMarkers = new GraveMarkers(script->GetDouble("GraveLifetime"));
   m_pPathManager = new PathManager<Raven_PathPlanner>(script->GetInt("MaxSearchCyclesPerUpdateStep"));
   m_pMap = new Raven_Map();
+  m_pTeamA = new Raven_Team(Raven_Team::TeamColor::yellow);
+  m_pTeamB = new Raven_Team(Raven_Team::TeamColor::green);
 
   //make sure the entity manager is reset
   EntityMgr->Reset();
@@ -525,6 +528,45 @@ void Raven_Game::ChangeWeaponOfPossessedBot(unsigned int weapon)const
 
     }
   }
+}
+
+void Raven_Game::SetTeamMatch(bool isTeamMatch)
+{
+    m_bTeamMatch = isTeamMatch;
+
+    if (m_bTeamMatch)
+    {
+
+        std::list<Raven_Bot*>::const_iterator curBot = m_Bots.begin();
+        int index = 0;
+        for (curBot; curBot != m_Bots.end(); ++curBot)
+        {
+            if (index % 2 == 0)
+            {
+                //Team A
+                m_pTeamA->AddMember(*curBot);
+                (*curBot)->SetTeam(m_pTeamA);
+            }
+            else
+            {
+                //Team B
+                m_pTeamB->AddMember(*curBot);
+                (*curBot)->SetTeam(m_pTeamB);
+            }
+            index++;
+        }
+    }
+    else 
+    {
+        std::list<Raven_Bot*>::const_iterator curBot = m_Bots.begin();
+        for (curBot; curBot != m_Bots.end(); ++curBot)
+        {
+            (*curBot)->SetTeam(nullptr);
+        }
+        m_pTeamA->Clear();
+        m_pTeamB->Clear();
+    }
+
 }
 
 //---------------------------- isLOSOkay --------------------------------------

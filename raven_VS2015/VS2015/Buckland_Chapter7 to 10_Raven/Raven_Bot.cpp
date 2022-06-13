@@ -497,7 +497,22 @@ void Raven_Bot::Render()
   gdi->ClosedShape(m_vecBotVBTrans);
   
   //draw the head
-  gdi->BrownBrush();
+  if (m_pTeam != nullptr)
+  {
+      switch (m_pTeam->m_teamColor)
+      {
+        case Raven_Team::TeamColor::green:
+            gdi->GreenBrush();
+            break;
+        case Raven_Team::TeamColor::yellow:
+            gdi->YellowBrush();
+            break;
+      }
+  }
+  else
+  {
+      gdi->BrownBrush();
+  }
   gdi->Circle(Pos(), 6.0 * Scale().x);
 
 
