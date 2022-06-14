@@ -187,6 +187,7 @@ void Raven_Game::Update()
       Raven_Bot* pBot = m_Bots.back();
       if (pBot == m_pSelectedBot)m_pSelectedBot=0;
       NotifyAllBotsOfRemoval(pBot);
+      pBot->GetTeam()->RemoveMember(pBot);
       delete m_Bots.back();
       m_Bots.remove(pBot);
       pBot = 0;
@@ -262,6 +263,19 @@ void Raven_Game::AddBots(unsigned int NumBotsToAdd)
     //register the bot with the entity manager
     EntityMgr->RegisterEntity(rb);
 
+    if (m_bTeamMatch)
+    {
+        if (m_Bots.size() % 2 == 0)
+        {
+            m_pTeamA->AddMember(rb);
+            rb->SetTeam(m_pTeamA);
+        }
+        else
+        {
+            m_pTeamB->AddMember(rb);
+            rb->SetTeam(m_pTeamB);
+        }
+    }
     
 #ifdef LOG_CREATIONAL_STUFF
   debug_con << "Adding bot with ID " << ttos(rb->ID()) << "";

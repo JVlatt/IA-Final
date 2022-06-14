@@ -20,3 +20,8 @@ void Raven_Team::AddMember(Raven_Bot* newMember)
 {
 	m_Members.push_back(newMember);
 }
+
+void Raven_Team::RemoveMember(Raven_Bot* oldMember)
+{
+	m_Members.remove(oldMember);
+}
