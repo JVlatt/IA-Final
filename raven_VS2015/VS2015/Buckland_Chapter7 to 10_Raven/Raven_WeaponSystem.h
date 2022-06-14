@@ -14,6 +14,8 @@
 #include <map>
 #include "2d/vector2d.h"
 
+#include "Fuzzy/FuzzyModule.h"
+
 class Raven_Bot;
 class Raven_Weapon;
 
@@ -36,6 +38,8 @@ private:
 
   //a pointer to the weapon the bot is currently holding
   Raven_Weapon*    m_pCurrentWeapon;
+
+  FuzzyModule      m_FuzzyModule;
 
   //this is the minimum amount of time a bot needs to see an opponent before
   //it can react to it. This variable is used to prevent a bot shooting at
@@ -76,7 +80,7 @@ public:
   //this method aims the bot's current weapon at the target (if there is a
   //target) and, if aimed correctly, fires a round. (Called each update-step
   //from Raven_Bot::Update)
-  void          TakeAimAndShoot()const;
+  void          TakeAimAndShoot();//const;
 
   //this method determines the most appropriate weapon to use given the current
   //game state. (Called every n update-steps from Raven_Bot::Update)
