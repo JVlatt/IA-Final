@@ -29,6 +29,7 @@ private:
   //the current target (this will be null if there is no target assigned)
   Raven_Bot*  m_pCurrentTarget;
 
+  bool		  m_bFocusTarget;
 
 public:
 
@@ -65,7 +66,15 @@ public:
   Raven_Bot* GetTarget()const{return m_pCurrentTarget;}
 
   //sets the target pointer to null
-  void       ClearTarget(){m_pCurrentTarget=0;}
+  void       ClearTarget(){
+	  m_pCurrentTarget=0;
+	  m_bFocusTarget = false;
+  }
+
+  void SetFocusTarget(Raven_Bot* newTarget) { 
+	  m_bFocusTarget = true;
+	  m_pCurrentTarget = newTarget; 
+  }
 };
 
 

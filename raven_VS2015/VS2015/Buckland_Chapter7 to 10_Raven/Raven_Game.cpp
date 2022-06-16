@@ -16,7 +16,6 @@
 #include "messaging/MessageDispatcher.h"
 #include "Raven_Messages.h"
 #include "GraveMarkers.h"
-
 #include "armory/Raven_Projectile.h"
 #include "armory/Projectile_Rocket.h"
 #include "armory/Projectile_Pellet.h"
@@ -39,7 +38,8 @@ Raven_Game::Raven_Game():m_pSelectedBot(NULL),
                          m_bRemoveABot(false),
                          m_pMap(NULL),
                          m_pPathManager(NULL),
-                         m_pGraveMarkers(NULL)
+                         m_pGraveMarkers(NULL),
+                         m_bTeamMatch(false)
 {
   //load in the default map
   LoadMap(script->GetString("StartMap"));
@@ -186,6 +186,7 @@ void Raven_Game::Update()
       Raven_Bot* pBot = m_Bots.back();
       if (pBot == m_pSelectedBot)m_pSelectedBot=0;
       NotifyAllBotsOfRemoval(pBot);
+      if(IsTeamMatch()) pBot->GetTeam()->RemoveMember(pBot);
       delete m_Bots.back();
       m_Bots.remove(pBot);
       pBot = 0;
@@ -261,6 +262,19 @@ void Raven_Game::AddBots(unsigned int NumBotsToAdd)
     //register the bot with the entity manager
     EntityMgr->RegisterEntity(rb);
 
+    if (m_bTeamMatch)
+    {
+        if (m_Bots.size() % 2 == 0)
+        {
+            m_pTeamA->AddMember(rb);
+            rb->SetTeam(m_pTeamA);
+        }
+        else
+        {
+            m_pTeamB->AddMember(rb);
+            rb->SetTeam(m_pTeamB);
+        }
+    }
     
 #ifdef LOG_CREATIONAL_STUFF
   debug_con << "Adding bot with ID " << ttos(rb->ID()) << "";
@@ -388,6 +402,8 @@ bool Raven_Game::LoadMap(const std::string& filename)
   m_pGraveMarkers = new GraveMarkers(script->GetDouble("GraveLifetime"));
   m_pPathManager = new PathManager<Raven_PathPlanner>(script->GetInt("MaxSearchCyclesPerUpdateStep"));
   m_pMap = new Raven_Map();
+  m_pTeamA = new Raven_Team(Raven_Team::TeamColor::yellow);
+  m_pTeamB = new Raven_Team(Raven_Team::TeamColor::green);
 
   //make sure the entity manager is reset
   EntityMgr->Reset();
@@ -478,7 +494,45 @@ void Raven_Game::ClickLeftMouseButton(POINTS p)
 {
   if (m_pSelectedBot && m_pSelectedBot->isPossessed())
   {
-    m_pSelectedBot->FireWeapon(POINTStoVector(p));
+    Vector2D pos = POINTStoVector(p);
+
+    m_pSelectedBot->FireWeapon(pos);
+    if (IsTeamMatch() && m_pSelectedBot == m_pSelectedBot->GetTeam()->m_pLeader)
+    {
+        Raven_Bot* pBot = GetBotAtPosition(pos);
+        if (pBot)
+        {
+            if (pBot->GetTeam() != m_pSelectedBot->GetTeam())
+            {
+                m_pSelectedBot->GetTeam()->SetTarget(pBot);
+                std::list<Raven_Bot*>::const_iterator curBot = m_pSelectedBot->GetTeam()->m_Members.begin();
+                for (curBot; curBot != m_pSelectedBot->GetTeam()->m_Members.end(); ++curBot)
+                {
+                    if (*curBot != m_pSelectedBot)
+                        Dispatcher->DispatchMsg(SEND_MSG_IMMEDIATELY,
+                            SENDER_ID_IRRELEVANT,
+                            (*curBot)->ID(),
+                            Msg_FocusHim,
+                            pBot);
+                }
+
+            }
+            else
+            {
+                    std::list<Raven_Bot*>::const_iterator curBot = m_pSelectedBot->GetTeam()->m_Members.begin();
+                    for (curBot; curBot != m_pSelectedBot->GetTeam()->m_Members.end(); ++curBot)
+                    {
+                        if (*curBot != m_pSelectedBot)
+                            Dispatcher->DispatchMsg(SEND_MSG_IMMEDIATELY,
+                                SENDER_ID_IRRELEVANT,
+                                (*curBot)->ID(),
+                                Msg_HelpHim,
+                                pBot);
+                    }
+            }
+        }
+        
+    }
   }
 }
 
@@ -525,6 +579,48 @@ void Raven_Game::ChangeWeaponOfPossessedBot(unsigned int weapon)const
 
     }
   }
+}
+
+void Raven_Game::SetTeamMatch(bool isTeamMatch)
+{
+    m_bTeamMatch = isTeamMatch;
+
+    if (m_bTeamMatch)
+    {
+
+        std::list<Raven_Bot*>::const_iterator curBot = m_Bots.begin();
+        int index = 0;
+        for (curBot; curBot != m_Bots.end(); ++curBot)
+        {
+            if (index % 2 == 0)
+            {
+                //Team A
+                m_pTeamA->AddMember(*curBot);
+                (*curBot)->SetTeam(m_pTeamA);
+            }
+            else
+            {
+                //Team B
+                m_pTeamB->AddMember(*curBot);
+                (*curBot)->SetTeam(m_pTeamB);
+            }
+            index++;
+        }
+
+        m_pTeamA->SetLeader((*m_pTeamA->m_Members.begin()));
+        m_pTeamB->SetLeader((*m_pTeamB->m_Members.begin()));
+    }
+    else 
+    {
+        std::list<Raven_Bot*>::const_iterator curBot = m_Bots.begin();
+        for (curBot; curBot != m_Bots.end(); ++curBot)
+        {
+            (*curBot)->SetTeam(nullptr);
+        }
+        m_pTeamA->Clear();
+        m_pTeamB->Clear();
+    }
+
 }
 
 //---------------------------- isLOSOkay --------------------------------------

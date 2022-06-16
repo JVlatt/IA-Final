@@ -16,7 +16,7 @@
 #include "game/MovingEntity.h"
 #include "misc/utils.h"
 #include "Raven_TargetingSystem.h"
-
+#include "Raven_Team.h"
 
 class Raven_PathPlanner;
 class Raven_Steering;
@@ -31,7 +31,6 @@ class Raven_SensoryMemory;
 
 
 
-
 class Raven_Bot : public MovingEntity
 {
 private:
@@ -39,6 +38,12 @@ private:
   enum Status{alive, dead, spawning};
 
 private:
+  
+  //Active Team
+  Raven_Team*                        m_pTeam;
+  
+  //Is this bot focused by the other team
+  bool								 m_bIsFocused;
 
   //alive, dead or spawning?
   Status                             m_Status;
@@ -161,6 +166,9 @@ public:
   void          SetDead(){m_Status = dead;}
   void          SetAlive(){m_Status = alive;}
 
+  void			SetTeam(Raven_Team* newTeam) { m_pTeam = newTeam; }
+  Raven_Team*			GetTeam() { return m_pTeam; }
+
   //returns a value indicating the time in seconds it will take the bot
   //to reach the given position at its current speed.
   double        CalculateTimeToReachPosition(Vector2D pos)const; 
@@ -174,6 +182,7 @@ public:
   void          ChangeWeapon(unsigned int type);
   void          TakePossession();
   void          Exorcise();
+  void			SetIsFocused(bool focus) { m_bIsFocused = focus; }
 
   //spawns the bot at the given position
   void          Spawn(Vector2D pos);
