@@ -23,30 +23,31 @@
 #include "Debug/DebugConsole.h"
 
 //-------------------------- ctor ---------------------------------------------
-Raven_Bot::Raven_Bot(Raven_Game* world,Vector2D pos):
+Raven_Bot::Raven_Bot(Raven_Game* world, Vector2D pos) :
 
-  MovingEntity(pos,
-               script->GetDouble("Bot_Scale"),
-               Vector2D(0,0),
-               script->GetDouble("Bot_MaxSpeed"),
-               Vector2D(1,0),
-               script->GetDouble("Bot_Mass"),
-               Vector2D(script->GetDouble("Bot_Scale"),script->GetDouble("Bot_Scale")),
-               script->GetDouble("Bot_MaxHeadTurnRate"),
-               script->GetDouble("Bot_MaxForce")),
-                 
-                 m_iMaxHealth(script->GetInt("Bot_MaxHealth")),
-                 m_iHealth(script->GetInt("Bot_MaxHealth")),
-                 m_pPathPlanner(NULL),
-                 m_pSteering(NULL),
-                 m_pWorld(world),
-                 m_pBrain(NULL),
-                 m_iNumUpdatesHitPersistant((int)(FrameRate * script->GetDouble("HitFlashTime"))),
-                 m_bHit(false),
-                 m_iScore(0),
-                 m_Status(spawning),
-                 m_bPossessed(false),
-                 m_dFieldOfView(DegsToRads(script->GetDouble("Bot_FOV")))
+    MovingEntity(pos,
+        script->GetDouble("Bot_Scale"),
+        Vector2D(0, 0),
+        script->GetDouble("Bot_MaxSpeed"),
+        Vector2D(1, 0),
+        script->GetDouble("Bot_Mass"),
+        Vector2D(script->GetDouble("Bot_Scale"), script->GetDouble("Bot_Scale")),
+        script->GetDouble("Bot_MaxHeadTurnRate"),
+        script->GetDouble("Bot_MaxForce")),
+
+    m_iMaxHealth(script->GetInt("Bot_MaxHealth")),
+    m_iHealth(script->GetInt("Bot_MaxHealth")),
+    m_pPathPlanner(NULL),
+    m_pSteering(NULL),
+    m_pWorld(world),
+    m_pBrain(NULL),
+    m_iNumUpdatesHitPersistant((int)(FrameRate* script->GetDouble("HitFlashTime"))),
+    m_bHit(false),
+    m_iScore(0),
+    m_Status(spawning),
+    m_bPossessed(false),
+    m_bIsFocused(false),
+    m_dFieldOfView(DegsToRads(script->GetDouble("Bot_FOV")))
            
 {
   SetEntityType(type_bot);
@@ -274,8 +275,17 @@ bool Raven_Bot::HandleMessage(const Telegram& msg)
 
       return true;
     }
+  case Msg_FocusHim:
+  {
+      Raven_Bot* pTargetBot = (Raven_Bot*)msg.ExtraInfo;
+      m_pTargSys->SetFocusTarget(pTargetBot);
+  }
 
-
+  case Msg_HelpHim:
+  {
+      Raven_Bot* pTargetBot = (Raven_Bot*)msg.ExtraInfo;
+      m_pBrain->AddGoal_MoveToPosition(pTargetBot->Pos());
+  }
   default: return false;
   }
 }
@@ -335,6 +345,7 @@ void Raven_Bot::ReduceHealth(unsigned int val)
 
   if (m_iHealth <= 0)
   {
+      SetIsFocused(false);
     SetDead();
   }
 
@@ -526,7 +537,22 @@ void Raven_Bot::Render()
   }
   gdi->Circle(Pos(), 6.0 * Scale().x);
 
+  if (m_bIsFocused && m_pWorld->IsTeamMatch() && m_pTeam != nullptr)
+  {
+      switch (m_pTeam->m_teamColor)
+      {
+      case Raven_Team::TeamColor::green:
+          gdi->YellowBrush();
+          gdi->HollowBrush();
+          break;
+      case Raven_Team::TeamColor::yellow:
+          gdi->GreenBrush();
+          gdi->HollowBrush();
+          break;
+      }
+      gdi->Circle(m_vPosition, BRadius() + 10);
 
+  }
   //render the bot's weapon
   m_pWeaponSys->RenderCurrentWeapon();
 
@@ -559,7 +585,10 @@ void Raven_Bot::Render()
   if (UserOptions->m_bShowScore)
   {
     gdi->TextAtPos(Pos().x-40, Pos().y+10, "Scr:"+ std::to_string(Score()));
-  }    
+  }
+
+  
+      
 }
 
 //------------------------- SetUpVertexBuffer ---------------------------------

@@ -42,6 +42,9 @@ private:
   //Active Team
   Raven_Team*                        m_pTeam;
   
+  //Is this bot focused by the other team
+  bool								 m_bIsFocused;
+
   //alive, dead or spawning?
   Status                             m_Status;
 
@@ -179,6 +182,7 @@ public:
   void          ChangeWeapon(unsigned int type);
   void          TakePossession();
   void          Exorcise();
+  void			SetIsFocused(bool focus) { m_bIsFocused = focus; }
 
   //spawns the bot at the given position
   void          Spawn(Vector2D pos);

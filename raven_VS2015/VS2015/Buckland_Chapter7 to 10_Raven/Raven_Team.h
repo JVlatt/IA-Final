@@ -7,7 +7,6 @@
 
 class Raven_Bot;
 
-
 class Raven_Team
 {
 public:
@@ -25,7 +24,7 @@ public:
 
 	enum Strategy { defend, chase};
 
-	void SetTarget(Raven_Bot* newTarget) { m_pTarget = newTarget; }
+	void SetTarget(Raven_Bot* newTarget);
 	void SetLeader(Raven_Bot* newLeader) { m_pLeader = newLeader; }
 
 	void AddMember(Raven_Bot* newMember);

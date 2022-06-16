@@ -16,7 +16,6 @@
 #include "messaging/MessageDispatcher.h"
 #include "Raven_Messages.h"
 #include "GraveMarkers.h"
-
 #include "armory/Raven_Projectile.h"
 #include "armory/Projectile_Rocket.h"
 #include "armory/Projectile_Pellet.h"
@@ -495,11 +494,44 @@ void Raven_Game::ClickLeftMouseButton(POINTS p)
 {
   if (m_pSelectedBot && m_pSelectedBot->isPossessed())
   {
-    m_pSelectedBot->FireWeapon(POINTStoVector(p));
+    Vector2D pos = POINTStoVector(p);
+
+    m_pSelectedBot->FireWeapon(pos);
     if (IsTeamMatch() && m_pSelectedBot == m_pSelectedBot->GetTeam()->m_pLeader)
     {
-        Raven_Bot* pBot = GetBotAtPosition(POINTStoVector(p));
-        if (pBot) m_pSelectedBot->GetTeam()->SetTarget(pBot);
+        Raven_Bot* pBot = GetBotAtPosition(pos);
+        if (pBot)
+        {
+            if (pBot->GetTeam() != m_pSelectedBot->GetTeam())
+            {
+                m_pSelectedBot->GetTeam()->SetTarget(pBot);
+                std::list<Raven_Bot*>::const_iterator curBot = m_pSelectedBot->GetTeam()->m_Members.begin();
+                for (curBot; curBot != m_pSelectedBot->GetTeam()->m_Members.end(); ++curBot)
+                {
+                    if (*curBot != m_pSelectedBot)
+                        Dispatcher->DispatchMsg(SEND_MSG_IMMEDIATELY,
+                            SENDER_ID_IRRELEVANT,
+                            (*curBot)->ID(),
+                            Msg_FocusHim,
+                            pBot);
+                }
+
+            }
+            else
+            {
+                    std::list<Raven_Bot*>::const_iterator curBot = m_pSelectedBot->GetTeam()->m_Members.begin();
+                    for (curBot; curBot != m_pSelectedBot->GetTeam()->m_Members.end(); ++curBot)
+                    {
+                        if (*curBot != m_pSelectedBot)
+                            Dispatcher->DispatchMsg(SEND_MSG_IMMEDIATELY,
+                                SENDER_ID_IRRELEVANT,
+                                (*curBot)->ID(),
+                                Msg_HelpHim,
+                                pBot);
+                    }
+            }
+        }
+        
     }
   }
 }

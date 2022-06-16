@@ -7,7 +7,8 @@
 //-------------------------------- ctor ---------------------------------------
 //-----------------------------------------------------------------------------
 Raven_TargetingSystem::Raven_TargetingSystem(Raven_Bot* owner):m_pOwner(owner),
-                                                               m_pCurrentTarget(0)
+                                                               m_pCurrentTarget(0),
+                                                               m_bFocusTarget(false)
 {}
 
 
@@ -17,6 +18,8 @@ Raven_TargetingSystem::Raven_TargetingSystem(Raven_Bot* owner):m_pOwner(owner),
 //-----------------------------------------------------------------------------
 void Raven_TargetingSystem::Update()
 {
+    if (m_bFocusTarget) return;
+
   double ClosestDistSoFar = MaxDouble;
   m_pCurrentTarget       = 0;
 
