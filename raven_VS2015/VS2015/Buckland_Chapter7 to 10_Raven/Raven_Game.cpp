@@ -187,7 +187,7 @@ void Raven_Game::Update()
       Raven_Bot* pBot = m_Bots.back();
       if (pBot == m_pSelectedBot)m_pSelectedBot=0;
       NotifyAllBotsOfRemoval(pBot);
-      pBot->GetTeam()->RemoveMember(pBot);
+      if(IsTeamMatch()) pBot->GetTeam()->RemoveMember(pBot);
       delete m_Bots.back();
       m_Bots.remove(pBot);
       pBot = 0;
@@ -496,6 +496,11 @@ void Raven_Game::ClickLeftMouseButton(POINTS p)
   if (m_pSelectedBot && m_pSelectedBot->isPossessed())
   {
     m_pSelectedBot->FireWeapon(POINTStoVector(p));
+    if (IsTeamMatch() && m_pSelectedBot == m_pSelectedBot->GetTeam()->m_pLeader)
+    {
+        Raven_Bot* pBot = GetBotAtPosition(POINTStoVector(p));
+        if (pBot) m_pSelectedBot->GetTeam()->SetTarget(pBot);
+    }
   }
 }
 
@@ -569,6 +574,9 @@ void Raven_Game::SetTeamMatch(bool isTeamMatch)
             }
             index++;
         }
+
+        m_pTeamA->SetLeader((*m_pTeamA->m_Members.begin()));
+        m_pTeamB->SetLeader((*m_pTeamB->m_Members.begin()));
     }
     else 
     {

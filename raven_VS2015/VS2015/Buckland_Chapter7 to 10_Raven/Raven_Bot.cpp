@@ -354,6 +354,11 @@ void Raven_Bot::TakePossession()
     m_bPossessed = true;
 
     debug_con << "Player Possesses bot " << this->ID() << "";
+
+    if (m_pWorld->IsTeamMatch())
+    {
+        m_pTeam->SetLeader(this);
+    }
   }
 }
 //------------------------------- Exorcise ------------------------------------
@@ -502,10 +507,16 @@ void Raven_Bot::Render()
       switch (m_pTeam->m_teamColor)
       {
         case Raven_Team::TeamColor::green:
-            gdi->GreenBrush();
+            if (m_pTeam->m_pLeader == this)
+                gdi->DarkGreenBrush();
+            else
+                gdi->GreenBrush();
             break;
         case Raven_Team::TeamColor::yellow:
-            gdi->YellowBrush();
+            if (m_pTeam->m_pLeader == this)
+                gdi->OrangeBrush();
+            else
+                gdi->YellowBrush();
             break;
       }
   }
