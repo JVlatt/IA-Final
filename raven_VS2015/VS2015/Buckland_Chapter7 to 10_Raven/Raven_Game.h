@@ -24,7 +24,11 @@
 #include "misc/utils.h"
 #include "game/EntityFunctionTemplates.h"
 #include "Raven_Bot.h"
+#include "LearningBot.h"
 #include "navigation/pathmanager.h"
+#include "CData.h"
+#include "CNeuralNet.h"
+
 
 
 class BaseGameEntity;
@@ -86,6 +90,21 @@ private:
   //must be notified so that they can remove any references to that bot from
   //their memory
   void NotifyAllBotsOfRemoval(Raven_Bot* pRemovedBot)const;
+
+
+
+  //============================================================================================================================================================================================
+  CData m_TrainingSet; //jeu d'apprentissage
+  CNeuralNet m_ModeleApprentissage; // modèle d'apprentissage, à insuffler dans un learning bot
+
+  bool m_LancerApprentissage; // pour lancer l'apprentissage
+  bool m_estEntraine;
+
+  bool AddData(vector<double>& data, vector<double>& targets);
+  void TrainThread();
+
+  //============================================================================================================================================================================================
+
   
 public:
   
@@ -99,7 +118,7 @@ public:
   //loads an environment from a file
   bool LoadMap(const std::string& FileName); 
 
-  void AddBots(unsigned int NumBotsToAdd);
+  void AddBots(unsigned int NumBotsToAdd, bool learningBot = false);
   void AddRocket(Raven_Bot* shooter, Vector2D target);
   void AddRailGunSlug(Raven_Bot* shooter, Vector2D target);
   void AddShotGunPellet(Raven_Bot* shooter, Vector2D target);
@@ -171,6 +190,9 @@ public:
   
   void  TagRaven_BotsWithinViewRange(BaseGameEntity* pRaven_Bot, double range)
               {TagNeighbors(pRaven_Bot, m_Bots, range);}  
+
+
+  CNeuralNet getModeleApprentissage() { return m_ModeleApprentissage; }
 };
 
 

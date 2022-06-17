@@ -47,6 +47,7 @@ Raven_Bot::Raven_Bot(Raven_Game* world, Vector2D pos) :
     m_Status(spawning),
     m_bPossessed(false),
     m_bIsFocused(false),
+    hasShoot(false),
     m_dFieldOfView(DegsToRads(script->GetDouble("Bot_FOV")))
            
 {
@@ -82,6 +83,10 @@ Raven_Bot::Raven_Bot(Raven_Game* world, Vector2D pos) :
                                         script->GetDouble("Bot_AimPersistance"));
 
   m_pSensoryMem = new Raven_SensoryMemory(this, script->GetDouble("Bot_MemorySpan"));
+
+  //initialisation pour les données d'observation du training set
+  m_vecObservation = std::vector<double>(0);
+  m_vecTarget = std::vector<double>(0);
 }
 
 //-------------------------------- dtor ---------------------------------------
@@ -161,6 +166,35 @@ void Raven_Bot::Update()
     //this method aims the bot's current weapon at the current target
     //and takes a shot if a shot is possible
     m_pWeaponSys->TakeAimAndShoot();
+  }
+  else 
+  {
+      if (m_pTargetSelectionRegulator->isReady())
+      {
+          m_pTargSys->Update();
+      }
+      // =================================================================================================================================================
+      //sauvegarder les données pour un eventuel apprentissage
+      if (m_pTargSys->isTargetPresent())
+      {
+          m_vecObservation.clear();
+          m_vecTarget.clear();
+
+          m_vecObservation.push_back((Pos().Distance(m_pTargSys->GetTarget()->Pos())));
+          m_vecObservation.push_back(m_pTargSys->isTargetWithinFOV());
+          m_vecObservation.push_back(m_pWeaponSys->GetAmmoRemainingForWeapon(m_pWeaponSys->GetCurrentWeapon()->GetType()));
+          m_vecObservation.push_back(m_pWeaponSys->GetCurrentWeapon()->GetType());
+          m_vecObservation.push_back((Health()));
+
+          if (!hasShoot) {
+              m_vecTarget.push_back(0); // La classe est négative.  Ne tire pas 
+          }
+          else {
+              m_vecTarget.push_back(1); // la classe de l'observation est positive. Il tire
+          }
+          hasShoot = false;
+      }
+      // =================================================================================================================================================
   }
 }
 
@@ -632,3 +666,4 @@ void Raven_Bot::IncreaseHealth(unsigned int val)
   m_iHealth+=val; 
   Clamp(m_iHealth, 0, m_iMaxHealth);
 }
+

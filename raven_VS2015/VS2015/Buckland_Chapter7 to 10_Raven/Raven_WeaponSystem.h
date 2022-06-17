@@ -14,6 +14,7 @@
 #include <map>
 #include "2d/vector2d.h"
 
+#include"armory/Raven_Weapon.h"
 #include "Fuzzy/FuzzyModule.h"
 
 class Raven_Bot;

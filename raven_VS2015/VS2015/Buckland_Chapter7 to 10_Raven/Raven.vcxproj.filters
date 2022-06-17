@@ -277,6 +277,9 @@
     <ClCompile Include="CData.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="LearningBot.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Raven_Bot.h">
@@ -620,6 +623,7 @@
     </ClInclude>
     <ClInclude Include="CNeuralNet.h" />
     <ClInclude Include="CData.h" />
+    <ClInclude Include="LearningBot.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Params.lua">

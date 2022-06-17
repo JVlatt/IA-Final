@@ -1,4 +1,5 @@
 #include "Raven_Game.h"
+#include "LearningBot.h"
 #include "Raven_ObjectEnumerations.h"
 #include "misc/WindowUtils.h"
 #include "misc/Cgdi.h"
@@ -26,6 +27,8 @@
 #include "goals/Raven_Goal_Types.h"
 
 
+#include "Debug/DebugConsole.h"
+#include <thread> // pour la fonction d'apprentissage
 
 //uncomment to write object creation/deletion to debug console
 //#define  LOG_CREATIONAL_STUFF
@@ -43,6 +46,11 @@ Raven_Game::Raven_Game():m_pSelectedBot(NULL),
 {
   //load in the default map
   LoadMap(script->GetString("StartMap"));
+
+
+  m_TrainingSet = CData();
+
+  m_LancerApprentissage = false;
 }
 
 
@@ -171,6 +179,22 @@ void Raven_Game::Update()
     else if ( (*curBot)->isAlive())
     {
       (*curBot)->Update();
+
+      // Si le bot est un player on ajoute au jeu
+      if ((m_TrainingSet.GetInputSet().size() < 200) & (*curBot)->isPossessed()) 
+      {
+          //ajouter une observation au jeu d'entrainement
+          AddData((*curBot)->GetDataShoot(), (*curBot)->GetTargetShoot());
+          debug_con << "la taille du training set" << m_TrainingSet.GetInputSet().size() << "";
+
+          if ((m_TrainingSet.GetInputSet().size() >= 200) & (!m_LancerApprentissage)) 
+          {
+              //debug_con << "On passe par la" << "";
+
+              std::thread t1(&Raven_Game::TrainThread, this);
+              t1.detach();
+          }
+      }
     }  
   } 
 
@@ -195,6 +219,59 @@ void Raven_Game::Update()
     m_bRemoveABot = false;
   }
 }
+
+
+
+
+
+
+
+//----------------------------- //----------------------------- //----------------------------- //----------------------------- //----------------------------- 
+//----------------------------- Apprentissage -------------------------------------------------------------------------------------------------------------------------------------------------------
+bool Raven_Game::AddData(vector<double>& data, vector<double>& targets)
+{
+    if (data.size() > 0 && targets.size() > 0) {
+
+        if (m_TrainingSet.GetInputNb() <= 0)
+            m_TrainingSet = CData(data.size(), targets.size());
+
+        if (data.size() == m_TrainingSet.GetInputNb() && targets.size() == m_TrainingSet.GetTargetsNb()) {
+
+            m_TrainingSet.AddData(data, targets);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+void Raven_Game::TrainThread() {
+
+    m_LancerApprentissage = true;
+
+    debug_con << "lancement de l'apprentissage" << "";
+
+    m_ModeleApprentissage = CNeuralNet(m_TrainingSet.GetInputNb(), m_TrainingSet.GetTargetsNb(), NUM_HIDDEN_NEURONS, LEARNING_RATE);
+    bool isTraining = m_ModeleApprentissage.Train(&m_TrainingSet);
+
+    if (isTraining) {
+        debug_con << "Modele d'apprentissage de tir est appris" << "";
+        m_estEntraine = true;
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 //----------------------------- AttemptToAddBot -------------------------------
@@ -245,13 +322,20 @@ bool Raven_Game::AttemptToAddBot(Raven_Bot* pBot)
 //
 //  Adds a bot and switches on the default steering behavior
 //-----------------------------------------------------------------------------
-void Raven_Game::AddBots(unsigned int NumBotsToAdd)
+void Raven_Game::AddBots(unsigned int NumBotsToAdd, bool learningBot)
 { 
   while (NumBotsToAdd--)
   {
     //create a bot. (its position is irrelevant at this point because it will
     //not be rendered until it is spawned)
-    Raven_Bot* rb = new Raven_Bot(this, Vector2D());
+      Raven_Bot* rb;
+      if (learningBot) 
+      {
+          rb = new LearningBot(this, Vector2D());
+          debug_con << "Learning bot est dans la place" << rb->ID() << "";
+      }
+      else
+        rb = new Raven_Bot(this, Vector2D());
 
     //switch the default steering behaviors on
     rb->GetSteering()->WallAvoidanceOn();
@@ -497,6 +581,7 @@ void Raven_Game::ClickLeftMouseButton(POINTS p)
     Vector2D pos = POINTStoVector(p);
 
     m_pSelectedBot->FireWeapon(pos);
+    m_pSelectedBot->hasShoot = true;
     if (IsTeamMatch() && m_pSelectedBot == m_pSelectedBot->GetTeam()->m_pLeader)
     {
         Raven_Bot* pBot = GetBotAtPosition(pos);

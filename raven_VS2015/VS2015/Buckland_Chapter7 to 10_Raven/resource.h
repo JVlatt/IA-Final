@@ -18,6 +18,7 @@
 #define IDM_NAVIGATION_SHOW_INDICES     40012
 #define IDM_MAP_ADDBOT                  40013
 #define IDM_GAME_ADDBOT                 40013
+#define IDM_GAME_ADDBOTML               40020
 #define IDM_MAP_REMOVEBOT               40014
 #define IDM_GAME_REMOVEBOT              40014
 #define IDM_NAVIGATION_SMOOTH_PATHS_PRECISE 40015
