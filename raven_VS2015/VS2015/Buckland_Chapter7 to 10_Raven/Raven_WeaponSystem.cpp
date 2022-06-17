@@ -234,7 +234,6 @@ void Raven_WeaponSystem::TakeAimAndShoot()
         m_FuzzyModule.Fuzzify("TimeTargetVisible", m_pOwner->GetTargetSys()->GetTimeTargetHasBeenVisible());
 
         double desirabilityScore = m_FuzzyModule.DeFuzzify("Desirability", FuzzyModule::max_av);
-        debug_con << "\n " << desirabilityScore;
         //
 
         //if the current weapon is not an instant hit type gun the target position

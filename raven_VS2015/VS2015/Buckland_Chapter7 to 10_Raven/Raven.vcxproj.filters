@@ -271,6 +271,12 @@
     <ClCompile Include="Raven_Team.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="CNeuralNet.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="CData.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Raven_Bot.h">
@@ -612,6 +618,8 @@
     <ClInclude Include="Raven_Team.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="CNeuralNet.h" />
+    <ClInclude Include="CData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Params.lua">
