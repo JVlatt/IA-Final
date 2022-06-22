@@ -174,8 +174,9 @@ public:
   bool          isSpawning()const{return m_Status == spawning;}
   
   void          SetSpawning(){m_Status = spawning;}
-  void          SetDead(){m_Status = dead;}
+  virtual void          SetDead(){m_Status = dead;}
   void          SetAlive(){m_Status = alive;}
+
 
   void			SetTeam(Raven_Team* newTeam) { m_pTeam = newTeam; }
   Raven_Team*			GetTeam() { return m_pTeam; }

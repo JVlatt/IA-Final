@@ -38,7 +38,7 @@ typedef vector<double> iovector;
 #define ERROR_THRESHOLD     0.003
 
 #define NUM_HIDDEN_NEURONS  12
-#define MAX_EPOQUE 200 
+#define MAX_EPOQUE 400 
 
 
 

@@ -8,6 +8,8 @@ class LearningBot : public Raven_Bot
 {
 private:
 	CNeuralNet m_ModeleAppris;
+	float timeAlive = 0;
+	int hitNb = 0;
 
 public:
 
@@ -16,7 +18,8 @@ public:
 
 
 	void Update();
-
+	void SetDead(); 
+	bool HandleMessage(const Telegram& msg);
 
 };
 

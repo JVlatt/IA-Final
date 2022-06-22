@@ -89,11 +89,14 @@ void LearningBot::Update()
 			m_pWeaponSys->SelectWeapon();
 		}
 
+
 		//this method aims the bot's current weapon at the current target
 		//and takes a shot if a shot is possible
 
-		if (m_pTargSys->isTargetPresent()) {
+		if (m_pTargSys->isTargetPresent()) 
+		{
 
+			RotateFacingTowardPosition(GetTargetBot()->Pos());
 			m_vecObservation.clear();
 
 			m_vecObservation.push_back((Pos().Distance(m_pTargSys->GetTarget()->Pos())));
@@ -104,19 +107,42 @@ void LearningBot::Update()
 
 
 			std::vector<double> output = m_ModeleAppris.Update(m_vecObservation);
-
 			bool canShoot = false;
 
-			if (output.size() > 0)
-				canShoot = output[0];
+			if (output.size() > 0) 
+			{
+				// output est tout le temps positif donc on mets une valeur arbitraire (ici 0.07f) pour que le bot tire uniquement dans les
+				// situations où on lui a appris
+				canShoot = (output[0] > 0.07f);
+				//debug_con << output[0] << "";
+			}
 
 			if (canShoot) 
 			{
+				//debug_con << "Le learning bot tire" << "";
 				m_pWeaponSys->TakeAimAndShoot();
 			}
 
 		}
+		timeAlive += 1;
 	}
+}
+
+void LearningBot::SetDead()
+{
+	debug_con << "Le learning bot a survécu : " << (timeAlive / 60) << "s" << "";
+	debug_con << "Le learning bot a touché : " << hitNb << "";
+	m_Status = dead;
+}
+
+bool LearningBot::HandleMessage(const Telegram& msg)
+{
+	bool b = Raven_Bot::HandleMessage(msg);
+	if (msg.Msg == 999) 
+	{
+		hitNb++;
+	}
+	return b;
 }
 
 

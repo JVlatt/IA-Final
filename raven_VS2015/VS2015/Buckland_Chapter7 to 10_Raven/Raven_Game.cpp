@@ -181,13 +181,18 @@ void Raven_Game::Update()
       (*curBot)->Update();
 
       // Si le bot est un player on ajoute au jeu
-      if ((m_TrainingSet.GetInputSet().size() < 200) & (*curBot)->isPossessed()) 
+      if ((m_TrainingSet.GetInputSet().size() < 400) & (*curBot)->isPossessed()) 
       {
           //ajouter une observation au jeu d'entrainement
-          AddData((*curBot)->GetDataShoot(), (*curBot)->GetTargetShoot());
-          debug_con << "la taille du training set" << m_TrainingSet.GetInputSet().size() << "";
+          if ((*curBot)->GetTargetSys()->isTargetPresent()) 
+          {
+              AddData((*curBot)->GetDataShoot(), (*curBot)->GetTargetShoot());
+              debug_con << "la taille du training set" << m_TrainingSet.GetInputSet().size() << "";
+          }
+          else
+            debug_con << "Il faut une target pour remplir le training set" << "";
 
-          if ((m_TrainingSet.GetInputSet().size() >= 200) & (!m_LancerApprentissage)) 
+          if ((m_TrainingSet.GetInputSet().size() >= 400) & (!m_LancerApprentissage)) 
           {
               //debug_con << "On passe par la" << "";
 

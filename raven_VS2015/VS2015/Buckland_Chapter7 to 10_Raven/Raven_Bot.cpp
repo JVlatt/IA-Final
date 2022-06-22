@@ -275,6 +275,14 @@ bool Raven_Bot::HandleMessage(const Telegram& msg)
                               Msg_YouGotMeYouSOB,
                               NO_ADDITIONAL_INFO);
     }
+    else // Message pour prévenir qu'on a touché
+    {
+        Dispatcher->DispatchMsg(SEND_MSG_IMMEDIATELY,
+            ID(),
+            msg.Sender,
+            999,
+            NO_ADDITIONAL_INFO);
+    }
 
     return true;
 
